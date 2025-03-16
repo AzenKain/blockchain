@@ -1,0 +1,37 @@
+{
+	"name": "blockchainwithcrypto",
+	"version": "1.0.0",
+	"main": "dist/index.js",
+	"scripts": {
+		"build": "tsc",
+		"start": "node dist/index.js",
+		"dev": "nodemon --watch src --ignore data --ext ts --exec ts-node src/index.ts"
+	},
+	"author": "",
+	"license": "ISC",
+	"description": "",
+	"dependencies": {
+		"@types/morgan": "^1.9.9",
+		"class-transformer": "^0.5.1",
+		"class-validator": "^0.14.1",
+		"cors": "^2.8.5",
+		"dotenv": "^16.4.7",
+		"express": "^4.21.2",
+		"express-session": "^1.18.1",
+		"flatted": "^3.3.3",
+		"morgan": "^1.10.0",
+		"swagger-jsdoc": "^6.2.8",
+		"swagger-ui-express": "^5.0.1"
+	},
+	"devDependencies": {
+		"@types/cors": "^2.8.17",
+		"@types/express": "^5.0.0",
+		"@types/express-session": "^1.18.1",
+		"@types/node": "^20.0.0",
+		"@types/swagger-jsdoc": "^6.0.4",
+		"@types/swagger-ui-express": "^4.1.8",
+		"ts-node": "^10.9.1",
+		"ts-node-dev": "^2.0.0",
+		"typescript": "^5.0.0"
+	}
+}

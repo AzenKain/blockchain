@@ -1,0 +1,114 @@
+[
+  {
+    "transactions": [
+      {
+        "claimNumber": "COINBASE",
+        "settlementAmount": 6.25,
+        "settlementDate": "2025-03-15T11:52:55.775Z",
+        "carRegistration": "Me",
+        "mileage": 0,
+        "claimType": 0
+      }
+    ],
+    "blockNumber": 0,
+    "createdDate": "2025-03-15T11:52:55.775Z",
+    "blockHash": "O+btzU7WDcN65xjJIcuxWuFsjTUzKEjIRNLlJttwAqU=",
+    "previousBlockHash": null,
+    "nextBlock": {
+      "transactions": [
+        {
+          "claimNumber": "COINBASE",
+          "settlementAmount": 6.25,
+          "settlementDate": "2025-03-16T16:40:36.013Z",
+          "carRegistration": "58.187.175.38",
+          "mileage": 0,
+          "claimType": 0
+        },
+        {
+          "claimNumber": "dádad",
+          "settlementAmount": 3333,
+          "settlementDate": "2025-03-16T16:40:32.494Z",
+          "carRegistration": "đá",
+          "mileage": 333,
+          "claimType": 0
+        },
+        {
+          "claimNumber": "dádad",
+          "settlementAmount": 3333,
+          "settlementDate": "2025-03-16T16:40:33.265Z",
+          "carRegistration": "đá",
+          "mileage": 333,
+          "claimType": 0
+        },
+        {
+          "claimNumber": "dádad",
+          "settlementAmount": 3333,
+          "settlementDate": "2025-03-16T16:40:33.737Z",
+          "carRegistration": "đá",
+          "mileage": 333,
+          "claimType": 0
+        },
+        {
+          "claimNumber": "dádad",
+          "settlementAmount": 3333,
+          "settlementDate": "2025-03-16T16:40:34.142Z",
+          "carRegistration": "đá",
+          "mileage": 333,
+          "claimType": 0
+        }
+      ],
+      "blockNumber": 1,
+      "createdDate": "2025-03-16T16:40:36.013Z",
+      "blockHash": "v3aBUj9SgjTWKYcQlFxiTGgfLGuCh2du+FIhowP2KfI=",
+      "previousBlockHash": "O+btzU7WDcN65xjJIcuxWuFsjTUzKEjIRNLlJttwAqU="
+    }
+  },
+  {
+    "transactions": [
+      {
+        "claimNumber": "COINBASE",
+        "settlementAmount": 6.25,
+        "settlementDate": "2025-03-16T16:40:36.013Z",
+        "carRegistration": "58.187.175.38",
+        "mileage": 0,
+        "claimType": 0
+      },
+      {
+        "claimNumber": "dádad",
+        "settlementAmount": 3333,
+        "settlementDate": "2025-03-16T16:40:32.494Z",
+        "carRegistration": "đá",
+        "mileage": 333,
+        "claimType": 0
+      },
+      {
+        "claimNumber": "dádad",
+        "settlementAmount": 3333,
+        "settlementDate": "2025-03-16T16:40:33.265Z",
+        "carRegistration": "đá",
+        "mileage": 333,
+        "claimType": 0
+      },
+      {
+        "claimNumber": "dádad",
+        "settlementAmount": 3333,
+        "settlementDate": "2025-03-16T16:40:33.737Z",
+        "carRegistration": "đá",
+        "mileage": 333,
+        "claimType": 0
+      },
+      {
+        "claimNumber": "dádad",
+        "settlementAmount": 3333,
+        "settlementDate": "2025-03-16T16:40:34.142Z",
+        "carRegistration": "đá",
+        "mileage": 333,
+        "claimType": 0
+      }
+    ],
+    "blockNumber": 1,
+    "createdDate": "2025-03-16T16:40:36.013Z",
+    "blockHash": "v3aBUj9SgjTWKYcQlFxiTGgfLGuCh2du+FIhowP2KfI=",
+    "previousBlockHash": "O+btzU7WDcN65xjJIcuxWuFsjTUzKEjIRNLlJttwAqU="
+  }
+]
