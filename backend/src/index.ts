@@ -3,7 +3,7 @@ import { createServer } from "http";
 import cors from "cors";
 import * as dotenv from "dotenv";
 import morgan from "morgan";
-import { BlockChain, Transaction, Block, ClaimType } from "./lib/transactions";
+import { BlockChain } from "./lib/transactions";
 import { setupSwagger } from "./docs";
 import { blockRouter } from './routes';
 import database from "./database";

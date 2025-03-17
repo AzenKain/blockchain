@@ -2,113 +2,68 @@
   {
     "transactions": [
       {
-        "claimNumber": "COINBASE",
-        "settlementAmount": 6.25,
-        "settlementDate": "2025-03-15T11:52:55.775Z",
-        "carRegistration": "Me",
-        "mileage": 0,
-        "claimType": 0
+        "studentCode": "Me",
+        "mark": 6.25,
+        "timestamp": "2025-03-17T08:56:44.739Z",
+        "nMark": 0,
+        "subjectCode": ""
       }
     ],
     "blockNumber": 0,
-    "createdDate": "2025-03-15T11:52:55.775Z",
-    "blockHash": "O+btzU7WDcN65xjJIcuxWuFsjTUzKEjIRNLlJttwAqU=",
+    "createdDate": "2025-03-17T08:56:44.739Z",
+    "blockHash": "gio8mjSQOdYfYsJp7siz8W207jtGyd9k3ZQlxpI9cV4=",
     "previousBlockHash": null,
-    "nextBlock": {
-      "transactions": [
-        {
-          "claimNumber": "COINBASE",
-          "settlementAmount": 6.25,
-          "settlementDate": "2025-03-16T16:40:36.013Z",
-          "carRegistration": "58.187.175.38",
-          "mileage": 0,
-          "claimType": 0
-        },
-        {
-          "claimNumber": "dádad",
-          "settlementAmount": 3333,
-          "settlementDate": "2025-03-16T16:40:32.494Z",
-          "carRegistration": "đá",
-          "mileage": 333,
-          "claimType": 0
-        },
-        {
-          "claimNumber": "dádad",
-          "settlementAmount": 3333,
-          "settlementDate": "2025-03-16T16:40:33.265Z",
-          "carRegistration": "đá",
-          "mileage": 333,
-          "claimType": 0
-        },
-        {
-          "claimNumber": "dádad",
-          "settlementAmount": 3333,
-          "settlementDate": "2025-03-16T16:40:33.737Z",
-          "carRegistration": "đá",
-          "mileage": 333,
-          "claimType": 0
-        },
-        {
-          "claimNumber": "dádad",
-          "settlementAmount": 3333,
-          "settlementDate": "2025-03-16T16:40:34.142Z",
-          "carRegistration": "đá",
-          "mileage": 333,
-          "claimType": 0
-        }
-      ],
-      "blockNumber": 1,
-      "createdDate": "2025-03-16T16:40:36.013Z",
-      "blockHash": "v3aBUj9SgjTWKYcQlFxiTGgfLGuCh2du+FIhowP2KfI=",
-      "previousBlockHash": "O+btzU7WDcN65xjJIcuxWuFsjTUzKEjIRNLlJttwAqU="
-    }
+    "nextBlock": null
   },
   {
     "transactions": [
       {
-        "claimNumber": "COINBASE",
-        "settlementAmount": 6.25,
-        "settlementDate": "2025-03-16T16:40:36.013Z",
-        "carRegistration": "58.187.175.38",
-        "mileage": 0,
-        "claimType": 0
+        "studentCode": "dádasd",
+        "mark": 10,
+        "timestamp": "2025-03-17T09:39:18.089Z",
+        "nMark": 20,
+        "subjectCode": "CS50"
       },
       {
-        "claimNumber": "dádad",
-        "settlementAmount": 3333,
-        "settlementDate": "2025-03-16T16:40:32.494Z",
-        "carRegistration": "đá",
-        "mileage": 333,
-        "claimType": 0
+        "studentCode": "dádasd",
+        "mark": 100,
+        "timestamp": "2025-03-17T09:39:35.144Z",
+        "nMark": 20,
+        "subjectCode": "CS50"
       },
       {
-        "claimNumber": "dádad",
-        "settlementAmount": 3333,
-        "settlementDate": "2025-03-16T16:40:33.265Z",
-        "carRegistration": "đá",
-        "mileage": 333,
-        "claimType": 0
+        "studentCode": "A4555",
+        "mark": 10,
+        "timestamp": "2025-03-17T09:40:25.735Z",
+        "nMark": 20,
+        "subjectCode": "cs222"
       },
       {
-        "claimNumber": "dádad",
-        "settlementAmount": 3333,
-        "settlementDate": "2025-03-16T16:40:33.737Z",
-        "carRegistration": "đá",
-        "mileage": 333,
-        "claimType": 0
+        "studentCode": "A4555",
+        "mark": 10,
+        "timestamp": "2025-03-17T09:40:26.085Z",
+        "nMark": 20,
+        "subjectCode": "cs222"
       },
       {
-        "claimNumber": "dádad",
-        "settlementAmount": 3333,
-        "settlementDate": "2025-03-16T16:40:34.142Z",
-        "carRegistration": "đá",
-        "mileage": 333,
-        "claimType": 0
+        "studentCode": "A4555",
+        "mark": 10,
+        "timestamp": "2025-03-17T09:40:26.224Z",
+        "nMark": 20,
+        "subjectCode": "cs222"
+      },
+      {
+        "studentCode": "A4555",
+        "mark": 10,
+        "timestamp": "2025-03-17T09:40:26.453Z",
+        "nMark": 20,
+        "subjectCode": "cs222"
       }
     ],
     "blockNumber": 1,
-    "createdDate": "2025-03-16T16:40:36.013Z",
-    "blockHash": "v3aBUj9SgjTWKYcQlFxiTGgfLGuCh2du+FIhowP2KfI=",
-    "previousBlockHash": "O+btzU7WDcN65xjJIcuxWuFsjTUzKEjIRNLlJttwAqU="
+    "createdDate": "2025-03-17T09:41:35.481Z",
+    "blockHash": "UHiqSk1bsp2lYdj/f1HzONg0sVSmW9lS/usmfjle8Mw=",
+    "previousBlockHash": "gio8mjSQOdYfYsJp7siz8W207jtGyd9k3ZQlxpI9cV4=",
+    "nextBlock": null
   }
 ]

@@ -4,16 +4,25 @@ import { Block, Transaction } from "../lib/transactions";
 
 export const createBlockService = async (dto: CreateBlockDto) => {
     const block = fromDtoToBlock(dto)
-    const value = await database.addBlock(block, dto.miner)
-
-    return { status: value !== null ? true : false, block: value};
+    const value = await database.addBlock(block)
+    if (value.block === null) {
+        return value
+    }
+    const newBlock = Block.fromJSON(structuredClone(value.block))
+    newBlock?.removeMerkleTree()
+    return { status: value.status, block: newBlock};
 };
 
 export const getAllBlocksService = async () => {
     const data = database.getBlocks();
-    const newResult = data.map(v => Block.fromJSON(v))
-    newResult[0].removeMerkleTree()
-    return newResult
+    const blocks = data.blocks.map(v => Block.fromJSON(v))
+    blocks.forEach(it => it.nextBlock = null)
+    blocks.forEach(it => it.removeMerkleTree())
+
+    const wrongBlock = data.wrongBlocks.map(v => Block.fromJSON(v))
+    wrongBlock.forEach(it => it.nextBlock = null)
+    wrongBlock.forEach(it => it.removeMerkleTree())
+    return {status: data.status, blocks: blocks, wrongBlock: wrongBlock}
 };
 
 export const getTmpBlocksService = async () => {
@@ -27,7 +36,7 @@ export const getTmpBlocksService = async () => {
 export const createTransactionService = async (dto: CreateTransactionDto) => {
     const trans = fromDtoToTransaction(dto)
     const value = await database.addTransactions(trans)
-    return { status: value !== null ? true : false, trans: value }
+    return value
 };
 
 export function fromDtoToBlock(dto: CreateBlockDto): Block {
@@ -41,11 +50,10 @@ export function fromDtoToBlock(dto: CreateBlockDto): Block {
 
 export function fromDtoToTransaction(dto: CreateTransactionDto): Transaction {
     return new Transaction(
-        dto.claimNumber,
-        dto.settlementAmount,
-        new Date(dto.settlementDate),
-        dto.carRegistration,
-        dto.mileage,
-        dto.claimType
+        dto.studentCode,
+        dto.mark,
+        new Date(dto.timestamp),
+        dto.nMark,
+        dto.subjectCode
     );
 }

@@ -2,6 +2,18 @@ import * as fs from "fs";
 import * as path from "path";
 import { Block, BlockChain, IBlock, Transaction } from "../lib/transactions";
 
+
+export enum Status {
+    Ok = 0,
+    WrongBlock = 1,
+    CanNotAddBlock = 2,
+    CanNotAddTrans = 3,
+    NotExistTempBlock = 4,
+    NotExistCurrentBlock = 5,
+    NotEnoughTrans = 6,
+    OtherProblem = 7
+}
+
 class DatabaseSingleton {
     private static instance: DatabaseSingleton;
     private filePath: string;
@@ -52,6 +64,7 @@ class DatabaseSingleton {
 
             const data = await fs.promises.readFile(this.fileTmpPath, "utf-8");
             const parsedData = JSON.parse(data);
+
             const block = Block.fromJSON(parsedData);
             this.tmpBlock = block;
             return;
@@ -66,9 +79,10 @@ class DatabaseSingleton {
 
     async saveTmpBlock(): Promise<void> {
         try {
-            if (!this.tmpBlock) return;
-            const deepCopy = structuredClone(this.tmpBlock);
-            deepCopy.merkleTree = undefined
+            if (!this.tmpBlock || !(this.tmpBlock instanceof Block)) return;
+            let deepCopy = structuredClone(this.tmpBlock);
+            deepCopy = Block.fromJSON(deepCopy)
+            deepCopy.removeMerkleTree()
             const data = JSON.stringify(deepCopy, null, 2);
             await fs.promises.writeFile(this.fileTmpPath, data, "utf-8");
             console.log(`Temporary block saved successfully to ${this.fileTmpPath}`);
@@ -79,9 +93,10 @@ class DatabaseSingleton {
 
     async saveDatabase(): Promise<void> {
         try {
-            const deepCopy = structuredClone(this.chain.blocks);
-            deepCopy.forEach(it => it.merkleTree = undefined)
-            const data = JSON.stringify(deepCopy, null, 2);
+            const newResult = this.chain.blocks.map(v => Block.fromJSON(v))
+            newResult.forEach(it => it.removeMerkleTree())
+            newResult.forEach(it => it.nextBlock = null)
+            const data = JSON.stringify(newResult, null, 2);
             await fs.promises.writeFile(this.filePath, data, "utf-8");
             console.log(`Database saved successfully to ${this.filePath}`);
         } catch (error) {
@@ -91,15 +106,18 @@ class DatabaseSingleton {
 
     async initialize() {
         const blocks = await this.loadDatabase();
-
         if (blocks.length === 0) {
             const newBlock = new Block(0);
             newBlock.addCoinBaseTransaction("Me");
             blocks.push(newBlock);
-            await this.saveDatabase();
         }
 
         this.currentBlock = blocks[blocks.length - 1]
+
+        for (let i = 0; i < blocks.length-1; i++) {
+            blocks[i].nextBlock = blocks[i+1]
+        }
+
         blocks.forEach((block) => this.chain.acceptBlock(block));
 
         try {
@@ -107,7 +125,7 @@ class DatabaseSingleton {
         } catch (error) {
             console.error("Error verifying chain:", error);
         }
-
+        await this.saveDatabase()
         await this.loadTmpBlock()
     }
 
@@ -115,8 +133,12 @@ class DatabaseSingleton {
         return this.chain;
     }
 
-    getBlocks(): IBlock[] {
-        return this.chain.blocks
+    getBlocks(): {status : Status, blocks : IBlock[], wrongBlocks: IBlock[]}{
+        return {
+            status: this.chain.wrongBlocks.length === 0 ? Status.Ok : Status.WrongBlock, 
+            blocks: this.chain.blocks, 
+            wrongBlocks: this.chain.wrongBlocks
+        }
     }
 
     async getTmpBlocks(): Promise<Block>  {
@@ -129,48 +151,58 @@ class DatabaseSingleton {
         return this.tmpBlock;
     }
 
-    async addTransactions(tran: Transaction): Promise<Transaction | null> {
+    async addTransactions(tran: Transaction): Promise<{status : Status, trans : Transaction | null}> {
         if (this.tmpBlock === undefined) {
-            return null
+            return {status: Status.NotExistTempBlock, trans: null}
         }
-
+        if (this.chain.wrongBlocks.length !== 0) {
+            return {status: Status.WrongBlock, trans: null}
+        }
         this.tmpBlock.addTransaction(tran)
         await this.saveTmpBlock();
-        return tran
+        return {status: Status.Ok, trans: tran}
     }
 
-    async addBlock(block: Block, miner: string): Promise<Block | null> {
-        if (!this.tmpBlock || this.tmpBlock.transactions.length == 0 || !this.currentBlock) {
-    
-            return null
+    async addBlock(block: Block): Promise<{status : Status, block : Block | null}> {
+
+        if (this.tmpBlock === undefined) {
+            return {status: Status.NotExistTempBlock, block: null}
         }
+        if (this.tmpBlock.transactions.length < 4 ) {
+            return {status: Status.NotEnoughTrans, block: null}
+        }
+        if (!this.currentBlock) {
+            return {status: Status.NotExistCurrentBlock, block: null}
+        }
+        if (this.chain.wrongBlocks.length !== 0) {
+            return {status: Status.WrongBlock, block: null}
+        }
+
         block.setBlockHash(this.currentBlock)
         this.tmpBlock.createdDate = block.createdDate;
         this.tmpBlock.setBlockHash(this.currentBlock)
    
-        if (block.isValidChain(this.currentBlock?.blockHash, true)
-            && this.tmpBlock?.isValidChain(this.currentBlock?.blockHash, true)
+        if (!block.isValidChain(this.currentBlock?.blockHash, true)
+            || !this.tmpBlock?.isValidChain(this.currentBlock?.blockHash, true)
         ) {
-            const nBlock = new Block(this.chain.nextBlockNumber)
-            nBlock.addCoinBaseTransaction(miner)
-            block.transactions.forEach(v => nBlock.addTransaction(v))
-            nBlock.setBlockHash(this.currentBlock)
-            this.chain.acceptBlock(nBlock)
-            this.chain.verifyChain()
-
-            this.tmpBlock = new Block(this.chain.nextBlockNumber)
-            this.currentBlock = nBlock
-
-            await this.saveDatabase()
-            await this.saveTmpBlock()
-            
-            return nBlock
+            return {status: Status.CanNotAddBlock, block: null}
         }
+
+        const nBlock = new Block(this.chain.nextBlockNumber)
+        block.transactions.forEach(v => nBlock.addTransaction(v))
+        nBlock.setBlockHash(this.currentBlock)
+        this.chain.acceptBlock(nBlock)
+        this.chain.verifyChain()
+
+        this.tmpBlock = new Block(this.chain.nextBlockNumber)
+        this.currentBlock = nBlock
+
+        await this.saveDatabase()
+        await this.saveTmpBlock()
         
-        return null
+        return {status: Status.Ok, block: nBlock}
+        
     }
-
-
 }
 
 export default DatabaseSingleton.getInstance();

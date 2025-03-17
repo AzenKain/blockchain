@@ -1,57 +1,48 @@
 import { HashData } from "../blockchain";
 
 export interface ITransaction {
-  claimNumber: string;
-  settlementAmount: number;
-  settlementDate: Date;
-  carRegistration: string;
-  mileage: number;
-  claimType: ClaimType;
-
+  studentCode: string;
+  subjectCode: string;
+  mark: number;
+  timestamp: Date;
+  nMark: number;
   calculateTransactionHash(): string;
 }
 
-export enum ClaimType {
-  TotalLoss = 0
-}
 
 export class Transaction implements ITransaction {
-  claimNumber: string;
-  settlementAmount: number;
-  settlementDate: Date;
-  carRegistration: string;
-  mileage: number;
-  claimType: ClaimType;
+  studentCode: string;
+  mark: number;
+  timestamp: Date;
+  nMark: number;
+  subjectCode: string;
 
   static fromJSON(data: ITransaction): Transaction {
     return new Transaction(
-      data.claimNumber,
-      data.settlementAmount,
-      new Date(data.settlementDate),
-      data.carRegistration,
-      data.mileage,
-      data.claimType
+      data.studentCode,
+      data.mark,
+      new Date(data.timestamp),
+      data.nMark,
+      data.subjectCode
     );
   }
 
   constructor(
-    claimNumber: string,
-    settlementAmount: number,
-    settlementDate: Date,
-    carRegistration: string,
-    mileage: number,
-    claimType: ClaimType
+    studentCode: string,
+    mark: number,
+    timestamp: Date,
+    nMark: number,
+    subjectCode: string
   ) {
-    this.claimNumber = claimNumber;
-    this.settlementAmount = settlementAmount;
-    this.settlementDate = settlementDate;
-    this.carRegistration = carRegistration;
-    this.mileage = mileage;
-    this.claimType = claimType;
+    this.studentCode = studentCode;
+    this.mark = mark;
+    this.timestamp = timestamp;
+    this.nMark = nMark;
+    this.subjectCode = subjectCode;
   }
 
   calculateTransactionHash(): string {
-    const txnHash = `${this.claimNumber}${this.settlementAmount}${this.settlementDate}${this.carRegistration}${this.mileage}${this.claimType}`;
+    const txnHash = `${this.studentCode}${this.subjectCode}${this.mark}${this.timestamp}${this.nMark}`;
     return Buffer.from(HashData.computeHashSha256(Buffer.from(txnHash, "utf-8"))).toString("base64");
   }
 }

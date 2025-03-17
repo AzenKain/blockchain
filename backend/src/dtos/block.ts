@@ -5,10 +5,6 @@ export class CreateBlockDto {
   @IsArray()
   @IsNotEmpty()
   transactions: CreateTransactionDto[];
-
-  @IsString()
-  @IsNotEmpty()
-  miner: string;
   
   @IsInt()
   @Min(0)

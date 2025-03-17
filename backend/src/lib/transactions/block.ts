@@ -1,6 +1,6 @@
 import { HashData } from "../blockchain";
 import { MerkleHash, MerkleNode, MerkleTree } from "../merkle";
-import { ClaimType, ITransaction, Transaction } from "./transaction";
+import { ITransaction, Transaction } from "./transaction";
 
 export interface IBlock {
     transactions: ITransaction[];
@@ -8,13 +8,14 @@ export interface IBlock {
     createdDate: Date;
     blockHash: string;
     previousBlockHash?: string |null;
-    nextBlock?: IBlock;
+    nextBlock?: IBlock | null;
     merkleTree?: MerkleTree 
 
     addTransaction(transaction: ITransaction): void;
     calculateBlockHash(previousBlockHash: string): string;
     setBlockHash(parent: IBlock): void;
-    isValidChain(prevBlockHash: string | null, verbose: boolean): boolean;
+    isValidChain(prevBlockHash: string | null, verbose: boolean): { isValid: boolean; currentHash: string };
+    getMerklehash(): string;    
     removeMerkleTree(): void;
 }
 
@@ -24,7 +25,7 @@ export class Block implements IBlock {
     createdDate: Date;
     blockHash: string = "";
     previousBlockHash: string | null = null;
-    nextBlock?: IBlock;
+    nextBlock?: IBlock | null = null;
     merkleTree?: MerkleTree = new MerkleTree();
 
     constructor(blockNumber: number) {
@@ -54,22 +55,22 @@ export class Block implements IBlock {
 
     addCoinBaseTransaction(miner: string): void {
         const coinbaseTx = new Transaction(
-            "COINBASE",
+            miner,
             6.25, 
             new Date(),
-            miner,
             0,
-            ClaimType.TotalLoss 
+            ""
         );
 
         this.transactions.push(coinbaseTx);
+
         this.buildMerkleTree();
         this.blockHash = this.calculateBlockHash(this.previousBlockHash);
     }
 
     calculateBlockHash(previousBlockHash: string | null): string {
         const blockHeader = `${this.blockNumber}${this.createdDate.toISOString()}${previousBlockHash || ""}`;
-        const combined = `${this.merkleTree?.rootNode}${blockHeader}`;
+        const combined = `${this.merkleTree?.rootNode?.hash.toString()}${blockHeader}`;
         return Buffer.from(HashData.computeHashSha256(Buffer.from(combined, "utf-8"))).toString("base64");
     }
 
@@ -93,17 +94,18 @@ export class Block implements IBlock {
         this.merkleTree.buildTree();
     }
 
-    isValidChain(prevBlockHash: string | null, verbose: boolean): boolean {
+    isValidChain(prevBlockHash: string | null, verbose: boolean): { isValid: boolean; currentHash: string } {
         this.buildMerkleTree();
         const newBlockHash = this.calculateBlockHash(prevBlockHash);
         const isValid = newBlockHash === this.blockHash && this.previousBlockHash === prevBlockHash;
-        
+    
         if (verbose) {
-            console.log(`Block Number ${this.blockNumber} : ${isValid ? "PASS" : "FAILED"} VERIFICATION`);
+            console.log(`Block Number ${this.blockNumber}: ${isValid ? "PASS" : "FAILED"} VERIFICATION`);
         }
-
-        return this.nextBlock ? this.nextBlock.isValidChain(newBlockHash, verbose) : isValid;
+    
+        return { isValid, currentHash: newBlockHash };
     }
+    
 
     removeMerkleTree(): void {
         this.merkleTree = undefined
@@ -111,5 +113,11 @@ export class Block implements IBlock {
             return
         }
         return this.nextBlock.removeMerkleTree()
+    }
+
+    getMerklehash(): string {
+        if (this.transactions.length == 0) return ""
+        this.buildMerkleTree()
+        return this.merkleTree?.rootNode?.hash?.toString() || ""
     }
 }

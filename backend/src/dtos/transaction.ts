@@ -1,30 +1,24 @@
 import { IsInt, IsNotEmpty, IsString, IsEnum, IsNumber, Min, IsDate, IsDateString } from 'class-validator';
-import { ClaimType } from '../lib/transactions';
-
 export class CreateTransactionDto {
   @IsString()
   @IsNotEmpty()
-  claimNumber: string;
+  studentCode: string;
+  
+  @IsString()
+  @IsNotEmpty()
+  subjectCode: string;
 
   @IsNumber()
   @Min(0)
   @IsNotEmpty()
-  settlementAmount: number;
+  mark: number;
 
   @IsNotEmpty()
   @IsDateString()
-  settlementDate: Date;
-
-  @IsString()
-  @IsNotEmpty()
-  carRegistration: string;
+  timestamp: Date;
 
   @IsInt()
   @Min(0)
   @IsNotEmpty()
-  mileage: number;
-
-  @IsEnum(ClaimType)
-  @IsNotEmpty()
-  claimType: ClaimType;
+  nMark: number;
 }

@@ -1,9 +1,10 @@
 "use client";
 import { createBlock, createTransaction, getAllBlocks, getTmpBlocks } from '@/lib/api';
 import { CreateBlockDto, CreateTransactionDto } from '@/lib/api/dtos';
-import { Block, BlockChain, ClaimType, IBlock, Transaction } from '@/lib/transactions';
-import { AddABlock, AddATrans, AddListBlock, AddListTrans } from '@/redux/features/block/block.redux';
+import { Block, BlockChain, IBlock, Transaction } from '@/lib/transactions';
+import { AddABlock, AddATrans, AddListBlock, AddListTrans, AddWrongBlock } from '@/redux/features/block/block.redux';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
+import { Status } from '@/types';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 
@@ -13,16 +14,18 @@ const BlockchainDemo = () => {
   const listTrans = useAppSelector((state) => state.BlockRedux.listTrans);
   const [chain, setChain] = useState(new BlockChain());
   const [tmpBlock, setTmpBlock] = useState<Block | null>(null);
-  const [claimNumber, setClaimNumber] = useState<string>("");
-  const [settlementAmount, setSettlementAmount] = useState<number | "">("");
-  const [carRegistration, setCarRegistration] = useState<string>("");
-  const [mileage, setMileage] = useState<number | "">("");
+  const [studentCode, setStudentCode] = useState<string>("");
+  const [subjectCode, setSubjectCode] = useState<string>("");
+  const [mark, setMark] = useState<number | "">("");
+  const [nMark, setNMark] = useState<number | "">("");
   const [displayBlock, setDisplayBlock] = useState<IBlock | null>(null)
 
   useEffect(() => {
     const fetchData = async () => {
-      const dataBlock: IBlock[] = await getAllBlocks()
-      dispatch(AddListBlock(dataBlock))
+      const res = await getAllBlocks()
+
+      dispatch(AddListBlock(res.blocks))
+      dispatch(AddWrongBlock(res.wrongBlocks))
       const tmpBlock: IBlock = await getTmpBlocks()
       setTmpBlock(Block.fromJSON(tmpBlock))
       dispatch(AddListTrans(tmpBlock.transactions))
@@ -31,38 +34,46 @@ const BlockchainDemo = () => {
   }, [dispatch])
 
   useEffect(() => {
-    if (listBlock.length == 0) return
+    if (listBlock.length === 0) return;
+
     const newChain = new BlockChain();
-    listBlock.forEach(v => newChain.acceptBlock(Block.fromJSON(v)));
+    const clonedBlocks = listBlock.map(v => Block.fromJSON({ ...v }));
+    for (let i = 0; i < clonedBlocks.length - 1; i++) {
+      clonedBlocks[i].nextBlock = clonedBlocks[i + 1];
+    }
+
+    clonedBlocks.forEach(v => newChain.acceptBlock(v));
     newChain.verifyChain();
-    setDisplayBlock(newChain.blocks[0])
+
+    setDisplayBlock(newChain.blocks[0]);
     setChain(newChain);
+
     if (tmpBlock == null) {
-      setTmpBlock(new Block(newChain.nextBlockNumber))
+      setTmpBlock(new Block(newChain.nextBlockNumber));
     }
   }, [listBlock]);
+
 
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => setMounted(true), []);
 
   const handlerAddTransaction = async () => {
-    if (!claimNumber || !settlementAmount || !carRegistration || !mileage) {
+    if (!studentCode || !mark || !nMark) {
       toast.error("Vui lòng nhập đầy đủ thông tin!");
       return;
     }
 
     const newTransaction: CreateTransactionDto = {
-      claimNumber,
-      settlementAmount: Number(settlementAmount),
-      carRegistration,
-      mileage: Number(mileage),
-      claimType: ClaimType.TotalLoss,
-      settlementDate: new Date()
+      studentCode,
+      mark: Number(mark),
+      nMark: Number(nMark),
+      timestamp: new Date(),
+      subjectCode: subjectCode
     };
 
     const res = await createTransaction(newTransaction)
-    if (res.status && res.trans != null) {
+    if (res.status == Status.Ok && res.trans != null) {
       dispatch(AddATrans(res.trans))
       tmpBlock?.addTransaction(Transaction.fromJSON(res.trans))
       toast.success("Giao dịch thành công!");
@@ -70,10 +81,10 @@ const BlockchainDemo = () => {
       toast.success("Giao dịch thất bại!");
     }
 
-    // setClaimNumber("");
-    // setSettlementAmount("");
+    // setstudentCode("");
+    // setmark("");
     // setCarRegistration("");
-    // setMileage("");
+    // setnMark("");
   };
 
   const handlerCreateBlock = async () => {
@@ -88,26 +99,23 @@ const BlockchainDemo = () => {
 
     tmpBlock.setBlockHash(chain.blocks[chain.blocks.length - 1])
     const trans = listTrans.map(tx => ({
-      claimNumber: tx.claimNumber,
-      carRegistration: tx.carRegistration,
-      mileage: tx.mileage,
-      claimType: tx.claimType,
-      settlementDate: tx.settlementDate,
-      settlementAmount: tx.settlementAmount
+      studentCode: tx.studentCode,
+      mark: tx.mark,
+      timestamp: tx.timestamp,
+      nMark: tx.nMark,
+      subjectCode: tx.subjectCode
     } as CreateTransactionDto))
-    const resIp = await fetch("https://api64.ipify.org?format=json");
-    const data = await resIp.json();
+
     const newBlock: CreateBlockDto = {
       transactions: trans,
-      miner: data.ip,
       blockNumber: tmpBlock.blockNumber,
       createdDate: new Date(),
       blockHash: tmpBlock.blockHash,
       previousBlockHash: tmpBlock.previousBlockHash,
     };
-    console.log(tmpBlock)
+
     const res = await createBlock(newBlock)
-    if (res.status && res.block != null) {
+    if (res.status == Status.Ok && res.block != null) {
       dispatch(AddABlock(res.block))
       chain?.acceptBlock(Block.fromJSON(res.block))
       chain.verifyChain()
@@ -133,46 +141,47 @@ const BlockchainDemo = () => {
         <h2 className="text-lg font-semibold mb-3">Thêm Transaction</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <div>
-            <label className="block text-sm mb-1">Claim Number:</label>
+            <label className="block text-sm mb-1">Student Code:</label>
             <input
               type="text"
               className="w-full p-1.5 text-sm border rounded"
               placeholder="VD: CL-2023-001"
-              value={claimNumber}
-              onChange={(e) => setClaimNumber(e.target.value)}
+              value={studentCode}
+              onChange={(e) => setStudentCode(e.target.value)}
             />
           </div>
           <div>
-            <label className="block text-sm mb-1">Settlement Amount:</label>
+            <label className="block text-sm mb-1">Subject Code:</label>
+            <input
+              type="text"
+              className="w-full p-1.5 text-sm border rounded"
+              placeholder="VD: CS250"
+              value={subjectCode}
+              onChange={(e) => setSubjectCode(e.target.value)}
+            />
+          </div>
+          <div>
+            <label className="block text-sm mb-1">Mark:</label>
             <input
               type="number"
               className="w-full p-1.5 text-sm border rounded"
               placeholder="VD: 5000000"
-              value={settlementAmount}
+              value={mark}
               onChange={(e) =>
-                setSettlementAmount(e.target.value ? Number(e.target.value) : "")
+                setMark(e.target.value ? Number(e.target.value) : "")
               }
             />
           </div>
+
           <div>
-            <label className="block text-sm mb-1">Car Registration:</label>
-            <input
-              type="text"
-              className="w-full p-1.5 text-sm border rounded"
-              placeholder="VD: 29A-12345"
-              value={carRegistration}
-              onChange={(e) => setCarRegistration(e.target.value)}
-            />
-          </div>
-          <div>
-            <label className="block text-sm mb-1">Mileage:</label>
+            <label className="block text-sm mb-1">N Mark:</label>
             <input
               type="number"
               className="w-full p-1.5 text-sm border rounded"
               placeholder="VD: 15000"
-              value={mileage}
+              value={nMark}
               onChange={(e) =>
-                setMileage(e.target.value ? Number(e.target.value) : "")
+                setNMark(e.target.value ? Number(e.target.value) : "")
               }
             />
           </div>
@@ -200,8 +209,8 @@ const BlockchainDemo = () => {
                 <ul key={trans.calculateTransactionHash() + index.toString()} className="text-sm">
                   <li className="mb-2 pb-2 border-b border-gray-200">
                     <div className="flex justify-between">
-                      <span className="font-medium break-all overflow-hidden">{trans.claimNumber}</span>
-                      <span className="break-all overflow-hidden">{trans.settlementAmount}</span>
+                      <span className="font-medium break-all overflow-hidden">{trans.studentCode}</span>
+                      <span className="break-all overflow-hidden">{trans.mark}</span>
                     </div>
                     <div className="text-xs text-gray-500 break-all overflow-hidden">
                       Hash: {trans.calculateTransactionHash()}
@@ -227,12 +236,12 @@ const BlockchainDemo = () => {
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-semibold">Blockchain</h2>
               <div className="px-3 py-1 rounded text-white bg-green-500 text-sm">
-                Blockchain hợp lệ
+                Danh sách Blockchain
               </div>
             </div>
 
             {/* Hiển thị danh sách block */}
-            <div className="flex flex-nowrap overflow-x-auto space-x-3 pb-4">
+            <div className="flex flex-nowrap overflow-x-auto space-x-3 pb-4 mt-2">
 
               {chain.blocks.map((block, index) => (
                 <div
@@ -251,6 +260,35 @@ const BlockchainDemo = () => {
               ))}
 
             </div>
+
+            <div className="flex justify-between items-center mt-4">
+              <h2 className="text-xl font-semibold">Blockchain</h2>
+              <div className="px-3 py-1 rounded text-white bg-red-500 text-sm">
+                Danh sách Blockchain bị lỗi
+              </div>
+            </div>
+
+            <div className="flex flex-nowrap overflow-x-auto space-x-3 pb-4 mt-2">
+
+              {chain.wrongBlocks.map((block, index) => (
+                <div
+                  onClick={() => setDisplayBlock(block)}
+                  key={block.blockHash + index.toString()}
+                  className="cursor-pointer min-w-48 p-3 rounded-lg border shadow flex-shrink-0 bg-white border-gray-200">
+                  <div className="font-bold mb-1 text-sm">Block #{block.blockNumber} {block.blockNumber === 0 ? "(Genesis)" : ""}</div>
+                  <div className="text-xs mb-2">
+                    <div>Hash: {block.blockHash}</div>
+                    <div>Prev: {block.previousBlockHash ? block.previousBlockHash : "N\A"}</div>
+                    <div>Merkle: {block.getMerklehash()}</div>
+                    <div>Date: {block.createdDate.toUTCString()}</div>
+                    <div>Transactions: {block.transactions.length}</div>
+                  </div>
+                </div>
+              ))}
+
+            </div>
+
+
 
             {/* Chi tiết của block được chọn */}
             <div className="mt-4 border-t pt-4">
@@ -277,8 +315,10 @@ const BlockchainDemo = () => {
                   <div className="mt-2 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
                     {displayBlock?.transactions.map((txNum, index) => (
                       <div key={txNum.calculateTransactionHash() + index.toString()} className="bg-white border rounded p-2 text-sm">
-                        <div><strong>Claim #:</strong> {txNum.claimNumber}</div>
-                        <div><strong>Amount:</strong> {txNum.settlementAmount}</div>
+                        <div className='break-all overflow-hidden'><strong >Student code #:</strong> {txNum.studentCode}</div>
+                        <div className='break-all overflow-hidden'><strong>Mark:</strong> {txNum.mark}</div>
+                        <div className='break-all overflow-hidden'><strong>NMark:</strong> {txNum.nMark}</div>
+                        <div className='break-all overflow-hidden'><strong>Timestamp:</strong> {txNum.timestamp.toUTCString()}</div>
                         <div className="text-xs text-gray-500 break-all overflow-hidden">
                           <strong>Hash:</strong> {txNum.calculateTransactionHash()}
                         </div>
